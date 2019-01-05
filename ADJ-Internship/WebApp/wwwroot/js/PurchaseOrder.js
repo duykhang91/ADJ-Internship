@@ -1,4 +1,10 @@
-﻿$("#to").keyup(function () { $("#from").val($("#to").val()); });
+﻿$(function () {
+  $('*[name=datetime]').appendDtpicker({
+    "dateOnly": true
+  });
+});
+
+$("#to").keyup(function () { $("#from").val($("#to").val()); });
 $("#from").keyup(function () { $("#to").val($("#from").val()); });
 
 function getTotalUnit() {

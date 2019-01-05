@@ -86,7 +86,7 @@
     </td>
     <td>
       <div class="col-md-10">
-        <input asp-for="OrderDate" class="uk-input" type="date" value=@Model.OrderDate.ToString("yyyy-MM-dd") />
+        <input asp-for="OrderDate" class="uk-input" type="text" name="datetime" value=@Model.OrderDate />
         <span asp-validation-for="OrderDate" class="uk-alert-danger"></span>
       </div>
     </td>
