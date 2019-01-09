@@ -1,42 +1,42 @@
-﻿//using System;
-//using System.Linq;
-//using System.Threading.Tasks;
-//using Microsoft.AspNetCore.Mvc;
-//using Microsoft.AspNetCore.Authorization;
-//using Microsoft.AspNetCore.Identity;
-//using Microsoft.EntityFrameworkCore;
-//using 
+﻿using System;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using ADJ.WebApp.Models;
 
-//namespace AspNetCoreTodo.Controllers
-//{
-//  [Authorize(Roles = "Administrator")]
-//  public class ManageUsersController : Controller
-//  {
-//    private readonly UserManager<ApplicationUser>
-//        _userManager;
+namespace ADJ.WebApp.Controllers
+{
+  [Authorize(Roles = "Administrator")]
+  public class ManageUsersController : Controller
+  {
+    private readonly UserManager<IdentityUser>
+        _userManager;
 
-//    public ManageUsersController(
-//        UserManager<ApplicationUser> userManager)
-//    {
-//      _userManager = userManager;
-//    }
+    public ManageUsersController(
+        UserManager<IdentityUser> userManager)
+    {
+      _userManager = userManager;
+    }
 
-//    public async Task<IActionResult> Index()
-//    {
-//      var admins = (await _userManager
-//          .GetUsersInRoleAsync("Administrator"))
-//          .ToArray();
+    public async Task<IActionResult> Index()
+    {
+      var admins = (await _userManager
+          .GetUsersInRoleAsync("Administrator"))
+          .ToArray();
 
-//      var everyone = await _userManager.Users
-//          .ToArrayAsync();
+      var everyone = await _userManager.Users
+          .ToArrayAsync();
 
-//      var model = new ManageUsersViewModel
-//      {
-//        Administrators = admins,
-//        Everyone = everyone
-//      };
+      var model = new ManageUsersViewModel
+      {
+        Administrators = admins,
+        Everyone = everyone
+      };
 
-//      return View(model);
-//    }
-//  }
-//}
+      return View(model);
+    }
+  }
+}
