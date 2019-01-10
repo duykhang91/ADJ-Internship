@@ -17,6 +17,7 @@ using Autofac.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
+using ADJ.WebApp.Models;
 
 namespace ADJ.WebApp
 {
@@ -50,8 +51,46 @@ namespace ADJ.WebApp
       services.AddDbContext<AppIdentityDbContext>(options =>
           options.UseSqlServer(
               Configuration.GetConnectionString("DefaultConnection")));
-      services.AddDefaultIdentity<IdentityUser>()
-          .AddEntityFrameworkStores<AppIdentityDbContext>();
+      //services.AddDefaultIdentity<IdentityUser>()
+      //    .AddEntityFrameworkStores<AppIdentityDbContext>();
+      services.AddIdentity<ApplicationUser, IdentityRole>()
+        .AddEntityFrameworkStores<AppIdentityDbContext>()
+        .AddDefaultTokenProviders();
+
+      //Password Strength Setting
+      services.Configure<IdentityOptions>(options =>
+      {
+        // Password settings
+        options.Password.RequireDigit = true;
+        options.Password.RequiredLength = 8;
+        options.Password.RequireNonAlphanumeric = false;
+        options.Password.RequireUppercase = true;
+        options.Password.RequireLowercase = false;
+        options.Password.RequiredUniqueChars = 6;
+
+        // Lockout settings
+        options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(1);
+        //options.Lockout.MaxFailedAccessAttempts = 0;
+        options.Lockout.AllowedForNewUsers = false;
+
+        // User settings
+        options.User.RequireUniqueEmail = true;
+      });
+
+      //Setting the Account Login page
+      services.ConfigureApplicationCookie(options =>
+      {
+        // Cookie settings
+        options.Cookie.HttpOnly = true;
+        options.ExpireTimeSpan = TimeSpan.FromMinutes(30);
+        options.LoginPath = "/Account/Login"; // If the LoginPath is not set here,
+                                              // ASP.NET Core will default to /Account/Login
+        options.LogoutPath = "/Account/Logout"; // If the LogoutPath is not set here,
+                                                // ASP.NET Core will default to /Account/Logout
+        options.AccessDeniedPath = "/Account/AccessDenied"; // If the AccessDeniedPath is
+                                                            // /Account/AccessDenied
+        options.SlidingExpiration = true;
+      });
 
       // MVC
       services.AddMemoryCache();
@@ -84,7 +123,7 @@ namespace ADJ.WebApp
     }
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-    public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+    public void Configure(IApplicationBuilder app, IHostingEnvironment env, IServiceProvider services)
     {
       if (env.IsDevelopment())
       {
@@ -124,6 +163,28 @@ namespace ADJ.WebApp
          template: "{controller=Manifest}/{action=Index}/{pageIndex?}"
          );
       });
+
+      CreateUserRoles(services).Wait();
+    }
+
+    private async Task CreateUserRoles(IServiceProvider serviceProvider)
+    {
+      var RoleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+      var UserManager = serviceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+
+      IdentityResult roleResult;
+      //Adding Admin Role
+      var roleCheck = await RoleManager.RoleExistsAsync("Admin");
+      if (!roleCheck)
+      {
+        //create the roles and seed them to the database
+        roleResult = await RoleManager.CreateAsync(new IdentityRole("Admin"));
+      }
+      //Assign Admin role to the main User here we have given our newly registered 
+      //login id for Admin management
+      ApplicationUser user = await UserManager.FindByEmailAsync("sks@abc.com");
+      var User = new ApplicationUser();
+      await UserManager.AddToRoleAsync(user, "Admin");
     }
   }
 }

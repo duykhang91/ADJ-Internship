@@ -8,42 +8,51 @@ using ADJ.Repository.Core;
 using ADJ.Repository.Implementations;
 using ADJ.Repository.Interfaces;
 using Autofac;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 
 namespace ADJ.Infrastructure
 {
-    public class AutofacConfig
+  public class AutofacConfig
+  {
+    public static void Register(ContainerBuilder builder)
     {
-        public static void Register(ContainerBuilder builder)
-        {
-            // Unit of Work
-            builder.RegisterType<UnitOfWork>().As<IUnitOfWork>().InstancePerLifetimeScope();
+      // Unit of Work
+      builder.RegisterType<UnitOfWork>().As<IUnitOfWork>().InstancePerLifetimeScope();
 
-            // Service Context
-            builder.RegisterType<ApplicationContext>().AsSelf().InstancePerLifetimeScope();
+      // Service Context
+      builder.RegisterType<ApplicationContext>().AsSelf().InstancePerLifetimeScope();
 
-            // A trick to load dependency assembly prior to do the registration
-            // Just need to register for 1 class to let the assembly load, once it is loaded, 
-            // it can then be used to scan for other classes and registered dynamically
+      // A trick to load dependency assembly prior to do the registration
+      // Just need to register for 1 class to let the assembly load, once it is loaded, 
+      // it can then be used to scan for other classes and registered dynamically
 
-            // Repositories
-            builder.RegisterType<PurchaseOrderRepository>().As<IPurchaseOrderRepository>();
+      // Repositories
+      builder.RegisterType<PurchaseOrderRepository>().As<IPurchaseOrderRepository>();
 
-            // Services
-            builder.RegisterType<PurchaseOrderService>().As<IPurchaseOrderService>();
-            builder.RegisterGeneric(typeof(DataProvider<>)).As(typeof(IDataProvider<>));
+      // Services
+      builder.RegisterType<PurchaseOrderService>().As<IPurchaseOrderService>();
+      builder.RegisterGeneric(typeof(DataProvider<>)).As(typeof(IDataProvider<>));
 
-            RegisterDependenciesByConvention(builder);
-        }
+      //Identity
+      builder.RegisterType<UserStore<IdentityUser>>().As<IUserStore<IdentityUser>>();
 
-        /// <summary>
-        /// Registers dynamically all implementations with their interface
-        /// </summary>
-        private static void RegisterDependenciesByConvention(ContainerBuilder builder)
-        {
-            var neededAssemblies = AppDomain.CurrentDomain.GetAssemblies().Where(x => x.FullName.StartsWith("ADJ")).ToArray();
-            builder.RegisterAssemblyTypes(neededAssemblies)
-                .AsImplementedInterfaces()
-                .PreserveExistingDefaults();
-        }
+      builder.RegisterType<PasswordHasher<IdentityUser>>().As<IPasswordHasher<IdentityUser>>();
+
+      builder.RegisterType<UserManager<IdentityUser>>();
+
+      RegisterDependenciesByConvention(builder);
     }
+
+    /// <summary>
+    /// Registers dynamically all implementations with their interface
+    /// </summary>
+    private static void RegisterDependenciesByConvention(ContainerBuilder builder)
+    {
+      var neededAssemblies = AppDomain.CurrentDomain.GetAssemblies().Where(x => x.FullName.StartsWith("ADJ")).ToArray();
+      builder.RegisterAssemblyTypes(neededAssemblies)
+          .AsImplementedInterfaces()
+          .PreserveExistingDefaults();
+    }
+  }
 }
