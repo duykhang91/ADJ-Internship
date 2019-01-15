@@ -40,7 +40,7 @@
       <table class="uk-table uk-table-striped">
         <thead>
           <tr>
-            <th>PO Number</th>
+            <th><a asp-action="Display" asp-controller="Order" asp-route-order="@ViewData["poNumberParam"]" asp-route-poNumberFilter="@Model.CurrentFilter" class="uk-link-text">PO Number</a></th>
             <th>PO Date</th>
             <th>Origin</th>
             <th>Port Of Loading</th>
@@ -101,11 +101,11 @@
         {
           if (i == ViewBag.CurrentPage)
           {
-            <li class="uk-disabled"><a asp-route-pageIndex="@i" asp-route-poNumberFilter="@Model.CurrentFilter"><u>@i</u></a></li>
+            <li class="uk-disabled"><a asp-route-pageIndex="@i" asp-route-poNumberFilter="@Model.CurrentFilter" asp-route-order="@ViewBag.Sort"><u>@i</u></a></li>
           }
           else
           {
-            <li><a asp-route-pageIndex="@i" asp-route-poNumberFilter="@Model.CurrentFilter">@i</a></li>
+            <li><a asp-route-pageIndex="@i" asp-route-poNumberFilter="@Model.CurrentFilter" asp-route-order="@ViewBag.Sort">@i</a></li>
           }
         }
       </ul>

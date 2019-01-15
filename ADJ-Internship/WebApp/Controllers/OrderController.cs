@@ -23,11 +23,25 @@ namespace WebApp.Controllers
       pageSize = 20;
     }
 
-    public async Task<IActionResult> Display(string poNumberFilter, int? pageIndex)
+    public async Task<IActionResult> Display(string poNumberFilter, string order, int? pageIndex)
     {
       int current = pageIndex ?? 1;
       PagedListResult<OrderDTO> pagedlistResult = await _orderService.DisplaysAsync(poNumberFilter, current, pageSize);
+
+      ViewData["poNumberParam"] = order == "poNumber" ? "poNumber_desc" : "poNumber";
+
+      switch (order)
+      {
+        case "poNumber":
+          pagedlistResult.Items = pagedlistResult.Items.OrderBy(p => p.PONumber).ToList();
+          break;
+        case "poNumber_desc":
+          pagedlistResult.Items = pagedlistResult.Items.OrderByDescending(p => p.PONumber).ToList();
+          break;
+      }
+
       ViewBag.CurrentPage = current;
+      ViewBag.Sort = order;
 
       return View(pagedlistResult);
     }
